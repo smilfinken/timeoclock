@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -193,7 +194,7 @@ public class TimeOClock extends CanvasWatchFaceService {
         }
 
         private Bitmap createThemedBitmap(int width) {
-            final int diameter = clampValue(Math.round(width / 4f), 48, 96);
+            final int diameter = clampValue(Math.round(width / 5f), 48, 96);
             return tintImage(
                 Bitmap.createScaledBitmap(
                     BitmapFactory.decodeResource(getResources(), R.drawable.gradient128),
@@ -373,13 +374,21 @@ public class TimeOClock extends CanvasWatchFaceService {
         }
 
         private void drawAmbient(Canvas canvas) {
-            final String timeText = String.format(mLocale, "%02d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE));
-            final float textXOffset = mAmbientTextPaint.measureText(timeText) / 2f;
-            final float textYOffset = mAmbientTextPaint.getTextSize() / 2.8f;
-            canvas.drawText(timeText, mCenterX - textXOffset, mCenterY + textYOffset, mAmbientTextPaint);
+            final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:MM", mLocale);
+            final String timeText = timeFormat.format(mCalendar.getTime()); //String.format(mLocale, "%02d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE));
+            final float timeTextXOffset = mAmbientTextPaint.measureText(timeText) / 2f;
+            final float timeTextYOffset = 5; //mAmbientTextPaint.getTextSize();
+            canvas.drawText(timeText, mCenterX - timeTextXOffset, mCenterY - timeTextYOffset, mAmbientTextPaint);
+
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("E d", mLocale);
+            final String dateText = dateFormat.format(mCalendar.getTime()); //String.format(mLocale, "%02d %s", mCalendar.get(Calendar.DAY_OF_MONTH), "Sunday");
+            final float dateTextXOffset = mAmbientTextPaint.measureText(dateText) / 2f;
+            final float dateTextYOffset = mAmbientTextPaint.getTextSize() - 8;
+            canvas.drawText(dateText, mCenterX - dateTextXOffset, mCenterY + dateTextYOffset, mAmbientTextPaint);
+
             if (mBatteryFraction < LOW_BATTERY_LIMIT) {
                 final float batteryIconXOffset = mBatteryIconBitmap.getWidth() / 2f;
-                final float batteryIconYOffset = mBatteryIconBitmap.getHeight() / 2f + textYOffset;
+                final float batteryIconYOffset = mBatteryIconBitmap.getHeight() / 2f + timeTextYOffset;
                 canvas.drawBitmap(mBatteryIconBitmap, mCenterX - batteryIconXOffset, mCenterY + batteryIconYOffset, mAmbientBatteryPaint);
             }
         }
